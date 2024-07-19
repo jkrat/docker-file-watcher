@@ -48,7 +48,7 @@ class File_Watcher:
             current_files = self.get_file_list(directory)
             new_files = list(set(current_files) - set(previous_files))
             for new_file in new_files:
-                file_path = os.path.join(directory, new_file)
+                file_path = Path(os.path.join(directory, new_file))
                 self.access_file(file_path)
             previous_files = current_files
             time.sleep(5)
@@ -56,22 +56,25 @@ class File_Watcher:
     def get_file_list(self, directory: str) -> list: 
         return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and match_file_type(f, included_patterns=self.patterns)]
 
-    def access_file(self, file_path: str) -> None:
-        path = Path(file_path)
-        self.logger.info("path: %s", path)
+    def access_file(self, file_path: Path) -> None:
+        new_file_path = self.get_new_file_path(file_path)
+        self.write_file(new_file_path, "Success")
+        self.delete_file(file_path)
 
-        path_without_extension = path.with_suffix('')
+    def get_new_file_path(self, file_path: Path) -> str:
+        path_without_extension = file_path.with_suffix('')
         file_name = path_without_extension.name
-        new_file_path = os.path.join(self.new_base_path, f"{file_name}.txt")
-        self.logger.info("new file path will be %s", new_file_path)
+        return os.path.join(self.new_base_path, f"{file_name}.txt")
+    
+    def write_file(self, file_path: str, file_content: str) -> None:
+        if not os.path.exists(file_path):
+            with open(file_path, "x") as file:
+                file.write(file_content)
+                self.logger.info("file saved: %s", file_path)
 
-        with open(new_file_path, "x") as file:
-            file.write("Success")
-
-        self.logger.info("text file saved")
-
+    def delete_file(self, path: str) -> None:
         if os.path.exists(path):
-            self.logger.info("audio file deleted: %s", path)
+            self.logger.info("file deleted: %s", path)
             os.remove(path)
         else:
             self.logger.info("path for deletion does not exist: %s", path)
