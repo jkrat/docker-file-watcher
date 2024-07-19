@@ -12,6 +12,10 @@ RUN useradd --create-home containeruser
 USER containeruser
 WORKDIR /home/containeruser
 
+ENV VIRTUALENV=/home/containeruser/venv
+RUN python3 -m venv $VIRTUALENV
+ENV PATH="$VIRTUALENV/bin:$PATH"
+
 # Copy the src directory contents into the container at /src
 COPY --chown=containeruser src/ src/
 
