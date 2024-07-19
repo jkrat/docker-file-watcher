@@ -54,8 +54,7 @@ class File_Watcher:
             time.sleep(5)
 
     def get_file_list(self, directory: str) -> list: 
-        # return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
-        return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f) and match_file_type(f, self.patterns))]
+        return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and match_file_type(f, included_patterns=self.patterns)]
 
     def access_file(self, file_path: str) -> None:
         path = Path(file_path)
@@ -72,12 +71,10 @@ class File_Watcher:
         self.logger.info("text file saved")
 
         if os.path.exists(path):
-            self.logger.info("path exists for deletion: %s", path)
+            self.logger.info("audio file deleted: %s", path)
             os.remove(path)
         else:
             self.logger.info("path for deletion does not exist: %s", path)
-
-        self.logger.info("audio file deleted")
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO,

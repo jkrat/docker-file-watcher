@@ -4,8 +4,8 @@ def match_file_type(path, included_patterns=None, excluded_patterns=None, case_s
     """
     Matches from a set of paths based on acceptable patterns and
     ignorable patterns.
-    :param pathnames:
-        A list of path names that will be filtered based on matching and
+    :param path:
+        path name that will be filtered based on matching and
         ignored patterns.
     :param included_patterns:
         Allow filenames matching wildcard patterns specified in this list.
@@ -22,18 +22,12 @@ def match_file_type(path, included_patterns=None, excluded_patterns=None, case_s
     included = ["*"] if included_patterns is None else included_patterns
     excluded = [] if excluded_patterns is None else excluded_patterns
 
-    # for path in paths:
-    #     if _match_path(path, set(included), set(excluded), case_sensitive):
-    #         return True
-    # return False
-
     if _match_path(path, set(included), set(excluded), case_sensitive):
         return True
     else:
         return False
 
 def _match_path(path, included_patterns, excluded_patterns, case_sensitive):
-    """Internal function same as :func:`match_path` but does not check arguments."""
     if case_sensitive:
         path = PurePosixPath(path)
     else:
