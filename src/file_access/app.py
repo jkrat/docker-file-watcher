@@ -9,7 +9,7 @@ class File_Watcher:
 
     def __init__(
             self, 
-            patterns=None, 
+            patterns: list[str] = None, 
             logger: Optional[logging.Logger] = None
         ) -> None:
 
@@ -19,12 +19,12 @@ class File_Watcher:
         self.wait_new_files(self.directory)
 
     @property
-    def directory(self):
+    def directory(self) -> Optional[str]:
         """
         (Read-only)
-        Path to save transcribed files.
+        Path to monitor for file changes.
         """
-        return os.getenv('INCOMING_DIR')
+        return os.getenv('INCOMING_DIR', "/home/containeruser/src/incomingFiles")
     
     @property
     def new_base_path(self):
@@ -32,7 +32,7 @@ class File_Watcher:
         (Read-only)
         path to save transcribed files.
         """
-        return os.getenv('NEXT_DIR')
+        return os.getenv('NEXT_DIR', "/home/containeruser/src/nextFiles")
     
     @property
     def patterns(self):
@@ -45,15 +45,18 @@ class File_Watcher:
     def wait_new_files(self, directory: str) -> None: 
         previous_files = self.get_file_list(directory)
         while True:
-            current_files = self.get_file_list(directory)
-            new_files = list(set(current_files) - set(previous_files))
-            for new_file in new_files:
-                file_path = Path(os.path.join(directory, new_file))
-                self.access_file(file_path)
-            previous_files = current_files
             time.sleep(5)
+            try:
+                current_files = self.get_file_list(directory)
+                new_files = list(set(current_files) - set(previous_files))
+                for new_file in new_files:
+                    file_path = Path(os.path.join(directory, new_file))
+                    self.access_file(file_path)
+                previous_files = current_files
+            except Exception as e:
+                self.logger.error(f"Error while monitoring directory: {e}")
 
-    def get_file_list(self, directory: str) -> list: 
+    def get_file_list(self, directory: str) -> list[str]: 
         return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and match_file_type(f, included_patterns=self.patterns)]
 
     def access_file(self, file_path: Path) -> None:
